@@ -4,6 +4,7 @@ use frame_support::{
 	pallet_prelude::*,
 	traits::Randomness,
 };
+
 use frame_system::pallet_prelude::*;
 use sp_runtime::ArithmeticError;
 use sp_io::hashing::blake2_128;
@@ -56,6 +57,8 @@ pub mod pallet {
 		pub fn create(origin: OriginFor<T>) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
+
+
 			// TODO: ensure kitty id does not overflow
 			// return Err(ArithmeticError::Overflow.into());
 
@@ -71,7 +74,14 @@ pub mod pallet {
 			let kitty = Kitty(dna);
 			let kitty_id = Self::next_kitty_id();
 			Kitties::<T>::insert(&sender, kitty_id, kitty.clone());
-			NextKittyId::<T>::put(kitty_id + 1);
+
+			if 4294967295u32 == kitty_id {
+			    return Err(ArithmeticError::Overflow.into());
+			} else {
+			    NextKittyId::<T>::put(kitty_id + 1);
+			}
+			
+			// NextKittyId::<T>::put(kitty_id + 1);
 
 			// Emit event
 			Self::deposit_event(Event::KittyCreated(sender, kitty_id, kitty));
